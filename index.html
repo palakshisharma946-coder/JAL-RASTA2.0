@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>JalRasta</title>
+
+    <link rel="stylesheet"
+          href="style.css">
+
+    <!-- Leaflet CSS -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- ========================================
+         INTRO VIDEO
+    ========================================= -->
+
+    <section id="intro">
+
+        <video
+            id="introVideo"
+            autoplay
+            muted
+            playsinline>
+
+            <source
+                src="assets/intro.mp4"
+                type="video/mp4">
+
+        </video>
+
+
+        <div id="introContent">
+
+            <h1 id="logo">
+                JALRASTA
+            </h1>
+
+            <p id="tagline">
+                See Water. Understand Risk. Save Lives.
+            </p>
+
+            <button
+                type="button"
+                id="enterButton">
+
+                ENTER JALRASTA
+
+            </button>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ========================================
+         MAIN APP
+    ========================================= -->
+
+    <section id="app">
+
+        <header>
+
+            <div class="brand">
+                🌊 JALRASTA
+            </div>
+
+            <div class="status">
+                ● SYSTEM ONLINE
+            </div>
+
+        </header>
+
+
+        <!-- HERO -->
+
+        <div class="hero">
+
+            <p class="eyebrow">
+                WATER INTELLIGENCE & FLOOD RESPONSE
+            </p>
+
+            <h1>
+                Understand the Water.<br>
+                Protect the People.
+            </h1>
+
+            <p>
+                Smart monitoring, flood detection,
+                satellite analysis and rescue intelligence
+                in one place.
+            </p>
+
+        </div>
+
+
+
+        <!-- ========================================
+             DASHBOARD
+        ========================================= -->
+
+        <div class="dashboard">
+
+
+            <!-- LIVE FLOOD MAP -->
+
+            <div class="card mapCard">
+
+                <div class="cardIcon">
+                    🗺️
+                </div>
+
+                <h2>
+                    Live Flood Map
+                </h2>
+
+                <p>
+                    Explore flood zones, safe areas
+                    and rescue locations.
+                </p>
+
+                <button
+                    type="button"
+                    onclick="openMap()">
+
+                    EXPLORE MAP →
+
+                </button>
+
+            </div>
+
+
+
+            <!-- AI CHATBOT -->
+
+            <div class="card">
+
+                <div class="cardIcon">
+                    🤖
+                </div>
+
+                <h2>
+                    JalRasta AI
+                </h2>
+
+                <p>
+                    Ask questions about floods,
+                    weather and safe routes.
+                </p>
+
+                <button
+                    type="button"
+                    onclick="openChat()">
+
+                    OPEN AI ASSISTANT →
+
+                </button>
+
+            </div>
+
+
+
+            <!-- CLOUD INTELLIGENCE -->
+
+            <div class="card">
+
+                <div class="cardIcon">
+                    ☁️
+                </div>
+
+                <h2>
+                    Cloud Intelligence
+                </h2>
+
+                <p>
+                    Analyse cloud movement and
+                    rainfall patterns.
+                </p>
+
+                <button
+                    type="button"
+                    onclick="openCloud()">
+
+                    ANALYSE CLOUDS →
+
+                </button>
+
+            </div>
+
+
+
+            <!-- PADDY VS FLOOD -->
+
+            <div class="card paddy">
+
+                <div class="cardIcon">
+                    🌾
+                </div>
+
+                <h2>
+                    Paddy vs Flood
+                </h2>
+
+                <p>
+                    Identify whether a region is
+                    agricultural land or flooded.
+                </p>
+
+                <button
+                    type="button"
+                    onclick="openDetection()">
+
+                    START DETECTION →
+
+                </button>
+
+            </div>
+
+
+
+            <!-- FLOOD ALERT -->
+
+            <div class="card alert">
+
+                <div class="cardIcon">
+                    🚨
+                </div>
+
+                <h2>
+                    Flood Alert Center
+                </h2>
+
+                <p>
+                    Detect high-risk zones and
+                    generate emergency alerts.
+                </p>
+
+                <button
+                    type="button"
+                    onclick="openAlert()">
+
+                    VIEW ALERT →
+
+                </button>
+
+            </div>
+
+
+
+            <!-- RESCUE -->
+
+            <div class="card rescue">
+
+                <div class="cardIcon">
+                    🚑
+                </div>
+
+                <h2>
+                    Rescue Priority
+                </h2>
+
+                <p>
+                    Decide who needs help first
+                    and find the fastest route.
+                </p>
+
+                <button
+                    type="button"
+                    onclick="openRescue()">
+
+                    OPEN RESCUE SYSTEM →
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ========================================
+         MODAL
+    ========================================= -->
+
+    <div id="modal">
+
+        <div id="modalBox">
+
+            <button
+                type="button"
+                id="closeButton"
+                onclick="closeModal()">
+
+                ✕
+
+            </button>
+
+            <div id="modalContent"></div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Leaflet JS -->
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+
+
+    <!-- JalRasta JS -->
+    <script src="script.js"></script>
+
+
+</body>
+
+</html>

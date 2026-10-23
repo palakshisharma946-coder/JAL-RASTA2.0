@@ -1,0 +1,2286 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #063b52;
+    background: #eafaff;
+}
+
+
+/* =========================
+   INTRO VIDEO
+========================= */
+
+#intro {
+    width: 100%;
+    height: 100vh;
+
+    position: relative;
+    overflow: hidden;
+
+    background: #001923;
+}
+
+#introVideo {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+#intro::after {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background:
+        linear-gradient(
+            rgba(0, 25, 40, 0.05),
+            rgba(0, 25, 40, 0.65)
+        );
+
+    pointer-events: none;
+}
+
+
+/* =========================
+   INTRO TEXT
+========================= */
+
+#introContent {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 2;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+
+    color: white;
+}
+
+#logo {
+    font-size: clamp(55px, 9vw, 125px);
+
+    font-weight: 900;
+
+    letter-spacing: 12px;
+
+    text-shadow:
+        0 0 15px #8ff7ff,
+        0 0 35px #00d9ff,
+        0 0 70px #00bde8;
+}
+
+#tagline {
+    margin-top: 15px;
+
+    font-size: 18px;
+
+    letter-spacing: 3px;
+
+    text-shadow:
+        0 2px 15px #001c28;
+}
+
+#enterButton {
+    margin-top: 35px;
+
+    padding: 16px 40px;
+
+    border: 2px solid #8ef6ff;
+
+    border-radius: 50px;
+
+    background: rgba(0, 210, 240, 0.2);
+
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    letter-spacing: 1.5px;
+
+    cursor: pointer;
+
+    backdrop-filter: blur(10px);
+
+    transition: 0.3s ease;
+}
+
+#enterButton:hover {
+    background: #00d9ef;
+
+    color: #00364a;
+
+    transform: scale(1.08);
+
+    box-shadow:
+        0 0 25px #00eaff,
+        0 0 60px #00bddd;
+}
+
+
+/* =========================
+   MAIN APP
+========================= */
+
+#app {
+    min-height: 100vh;
+
+    padding: 30px 6% 70px;
+
+    background:
+
+        radial-gradient(
+            circle at 5% 5%,
+            #c9f7ff 0%,
+            transparent 28%
+        ),
+
+        radial-gradient(
+            circle at 95% 25%,
+            #baf3ff 0%,
+            transparent 30%
+        ),
+
+        linear-gradient(
+            135deg,
+            #eefcff,
+            #dff8ff
+        );
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+header {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding-bottom: 22px;
+
+    border-bottom:
+        1px solid rgba(0, 170, 200, 0.25);
+}
+
+.brand {
+    font-size: 25px;
+
+    font-weight: 900;
+
+    letter-spacing: 3px;
+
+    color: #0085aa;
+}
+
+.status {
+    padding: 8px 15px;
+
+    border-radius: 30px;
+
+    background: #d9fff4;
+
+    color: #00856b;
+
+    font-size: 11px;
+
+    font-weight: bold;
+}
+
+
+/* =========================
+   HERO
+========================= */
+
+.hero {
+    padding: 65px 0 40px;
+}
+
+.eyebrow {
+    color: #009dbd;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+    letter-spacing: 3px;
+}
+
+.hero h1 {
+    margin-top: 12px;
+
+    max-width: 900px;
+
+    font-size: clamp(40px, 6vw, 75px);
+
+    line-height: 1.05;
+
+    color: #063b52;
+}
+
+.hero > p:last-child {
+    max-width: 700px;
+
+    margin-top: 20px;
+
+    color: #587985;
+
+    font-size: 17px;
+
+    line-height: 1.7;
+}
+
+
+/* =========================
+   DASHBOARD GRID
+========================= */
+
+.dashboard {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 22px;
+}
+
+
+/* =========================
+   CARDS
+========================= */
+
+.card {
+    position: relative;
+
+    min-height: 310px;
+
+    padding: 30px;
+
+    overflow: hidden;
+
+    border-radius: 28px;
+
+    background:
+        rgba(255, 255, 255, 0.82);
+
+    border:
+        1px solid rgba(100, 210, 225, 0.45);
+
+    box-shadow:
+        0 15px 45px
+        rgba(0, 130, 160, 0.09);
+
+    backdrop-filter: blur(12px);
+
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.card::before {
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+    height: 180px;
+
+    right: -80px;
+    top: -80px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(0, 213, 238, 0.13);
+}
+
+.card:hover {
+    transform: translateY(-7px);
+
+    box-shadow:
+        0 22px 55px
+        rgba(0, 145, 175, 0.18);
+}
+
+.cardIcon {
+    font-size: 42px;
+}
+
+.card h2 {
+    margin-top: 15px;
+
+    font-size: 26px;
+
+    color: #06445a;
+}
+
+.card p {
+    max-width: 550px;
+
+    margin-top: 10px;
+
+    color: #66838d;
+
+    line-height: 1.6;
+}
+
+
+/* =========================
+   CARD BUTTON
+========================= */
+
+.card button {
+    position: relative;
+
+    z-index: 2;
+
+    margin-top: 25px;
+
+    width: 100%;
+
+    padding: 14px 20px;
+
+    border: none;
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #00bfd8,
+            #009fc2
+        );
+
+    color: white;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+    letter-spacing: 1px;
+
+    cursor: pointer;
+
+    transition: 0.3s ease;
+}
+
+.card button:hover {
+    background:
+        linear-gradient(
+            135deg,
+            #00e0ef,
+            #007fa2
+        );
+
+    box-shadow:
+        0 8px 25px
+        rgba(0, 175, 205, 0.3);
+}
+
+
+/* =========================
+   MAP CARD
+========================= */
+
+.mapCard {
+    min-height: 400px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #dffaff
+        );
+}
+
+
+/* =========================
+   PADDY CARD
+========================= */
+
+.paddy {
+    background:
+        linear-gradient(
+            135deg,
+            #fff9ed,
+            #eefcff
+        );
+}
+
+.paddy::before {
+    background:
+        rgba(229, 190, 115, 0.17);
+}
+
+
+/* =========================
+   ALERT CARD
+========================= */
+
+.alert {
+    background:
+        linear-gradient(
+            135deg,
+            #fffaf2,
+            #ffffff
+        );
+}
+
+.alert::before {
+    background:
+        rgba(239, 167, 65, 0.15);
+}
+
+.alert button {
+    background:
+        linear-gradient(
+            135deg,
+            #f2a13b,
+            #d77d16
+        );
+}
+
+
+/* =========================
+   RESCUE CARD
+========================= */
+
+.rescue {
+    background:
+        linear-gradient(
+            135deg,
+            #fffaf2,
+            #ffffff
+        );
+}
+#app {
+    display:none;
+}
+/* =========================
+   MODAL
+========================= */
+
+#modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 25px;
+
+    background:
+        rgba(0, 35, 50, 0.65);
+
+    backdrop-filter: blur(12px);
+}
+
+
+#modalBox {
+    position: relative;
+
+    width: min(900px, 95vw);
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    padding: 35px;
+
+    border-radius: 28px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #e9fbff
+        );
+
+    border:
+        1px solid rgba(0, 190, 220, 0.35);
+
+    box-shadow:
+        0 25px 80px
+        rgba(0, 100, 130, 0.3);
+}
+
+
+#modalBox h2 {
+    color: #06445a;
+
+    font-size: 30px;
+
+    margin-bottom: 12px;
+}
+
+
+#modalBox p {
+    color: #587985;
+
+    line-height: 1.6;
+}
+
+
+#closeButton {
+    position: absolute;
+
+    top: 18px;
+    right: 18px;
+
+    width: 38px;
+    height: 38px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: #dffaff;
+
+    color: #006b86;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+
+#closeButton:hover {
+    background: #00c7df;
+
+    color: white;
+}
+
+
+/* CLOUD ANALYSIS */
+
+.cloudAnalysis {
+    margin: 25px 0;
+
+    min-height: 180px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-direction: column;
+
+    border-radius: 22px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #dffaff,
+            #c3f5ff
+        );
+
+    overflow: hidden;
+}
+
+
+.bigCloud {
+    font-size: 85px;
+
+    animation:
+        cloudFloat 3s ease-in-out infinite;
+}
+
+
+.rainLines {
+    margin-top: -5px;
+
+    color: #00aeca;
+
+    font-size: 24px;
+
+    letter-spacing: 8px;
+}
+
+
+@keyframes cloudFloat {
+
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+}
+
+
+/* DATA BOX */
+
+.dataBox {
+    margin-top: 20px;
+
+    padding: 20px;
+
+    border-radius: 18px;
+
+    background:
+        rgba(255, 255, 255, 0.8);
+
+    border:
+        1px solid rgba(0, 180, 210, 0.2);
+}
+
+
+.dataBox h3 {
+    margin-bottom: 12px;
+
+    color: #007f9e;
+}
+
+
+.dataBox p {
+    margin: 8px 0;
+}
+
+
+/* MODAL BUTTON */
+
+.modalButton {
+    width: 100%;
+
+    margin-top: 22px;
+
+    padding: 15px;
+
+    border: none;
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #00bfd8,
+            #008eaf
+        );
+
+    color: white;
+
+    font-weight: bold;
+
+    letter-spacing: 1px;
+
+    cursor: pointer;
+}
+
+
+.modalButton:hover {
+    background:
+        linear-gradient(
+            135deg,
+            #00e0ef,
+            #007d9d
+        );
+
+    box-shadow:
+        0 8px 25px
+        rgba(0, 175, 205, 0.3);
+}
+
+
+/* SAR MAP */
+
+.sarMapContainer {
+    margin-top: 22px;
+
+    padding: 18px;
+
+    border-radius: 20px;
+
+    background: #ffffff;
+
+    border:
+        1px solid rgba(0, 180, 210, 0.2);
+}
+
+
+.sarMapContainer h3 {
+    margin-bottom: 15px;
+
+    color: #007f9e;
+}
+
+
+.sarFloodMap {
+    display: block;
+
+    width: 100%;
+
+    max-height: 500px;
+
+    object-fit: contain;
+
+    border-radius: 15px;
+
+    background: #dffaff;
+}
+/* =========================
+   CLOUD INTELLIGENCE
+========================= */
+
+.cloudDashboard {
+    text-align: center;
+}
+
+.cloudDashboard h2 {
+    color: #06445a;
+    font-size: 30px;
+}
+
+.cloudSubtitle {
+    color: #66838d;
+    margin: 10px 0 20px;
+}
+
+.locationBox {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.locationBox input {
+    flex: 1;
+    padding: 14px 16px;
+    border: 1px solid #9edee8;
+    border-radius: 12px;
+    outline: none;
+    font-size: 14px;
+}
+
+.locationBox input:focus {
+    border-color: #00bfd8;
+}
+
+.selectedLocation {
+    margin: 15px 0;
+    font-weight: bold;
+    color: #0085aa;
+}
+
+.satelliteScene {
+    position: relative;
+    height: 230px;
+    overflow: hidden;
+    border-radius: 22px;
+    margin: 20px 0;
+    background:
+        linear-gradient(
+            180deg,
+            #071f32,
+            #075875 55%,
+            #38b7c9
+        );
+}
+
+.satellite {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 38px;
+    z-index: 5;
+    filter: drop-shadow(0 0 12px #8ff7ff);
+}
+
+.orbitLine {
+    position: absolute;
+    top: 35px;
+    left: 10%;
+    width: 80%;
+    height: 90px;
+    border-top: 2px solid rgba(143,247,255,0.5);
+    border-radius: 50%;
+}
+
+.cloudLayer {
+    position: absolute;
+    top: 75px;
+    width: 100%;
+    font-size: 45px;
+    letter-spacing: 20px;
+    animation: cloudMove 8s linear infinite;
+}
+
+.groundLayer {
+    position: absolute;
+    bottom: -25px;
+    left: 0;
+    width: 100%;
+    font-size: 170px;
+    opacity: 0.8;
+}
+
+.scanLine {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 3px;
+    background: #8ff7ff;
+    box-shadow: 0 0 15px #00eaff;
+    animation: scanning 3s linear infinite;
+}
+
+@keyframes scanning {
+    0% {
+        top: 0;
+    }
+
+    100% {
+        top: 100%;
+    }
+}
+
+@keyframes cloudMove {
+    0% {
+        transform: translateX(-30px);
+    }
+
+    50% {
+        transform: translateX(20px);
+    }
+
+    100% {
+        transform: translateX(-30px);
+    }
+}
+
+.cloudStats {
+    display: grid;
+    grid-template-columns:
+        repeat(3, 1fr);
+    gap: 12px;
+}
+
+.cloudStat {
+    padding: 18px 10px;
+    border-radius: 18px;
+    background: #effcff;
+    border: 1px solid #b5e9f1;
+}
+
+.cloudStat span {
+    display: block;
+    font-size: 25px;
+}
+
+.cloudStat b {
+    display: block;
+    margin-top: 7px;
+    color: #0085aa;
+    font-size: 21px;
+}
+
+.cloudStat small {
+    color: #66838d;
+}
+
+.interpretationBox {
+    margin-top: 18px;
+    padding: 20px;
+    border-radius: 18px;
+    background: linear-gradient(
+        135deg,
+        #e7fbff,
+        #f8ffff
+    );
+    border-left: 5px solid #00bfd8;
+    text-align: left;
+}
+
+.interpretationTitle {
+    color: #0085aa;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+.interpretationBox p {
+    color: #315f6d;
+    line-height: 1.6;
+}
+.forecastSection {
+    margin-top: 20px;
+}
+
+.forecastTitle {
+    text-align: left;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #0085aa;
+    margin-bottom: 10px;
+}
+
+.forecastTimeline {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 5px 2px 12px;
+}
+
+.forecastItem {
+    min-width: 75px;
+    padding: 12px 8px;
+    border-radius: 16px;
+    background: #effcff;
+    border: 1px solid #b5e9f1;
+    text-align: center;
+}
+
+.forecastItem small {
+    display: block;
+    color: #66838d;
+    font-size: 10px;
+}
+
+.forecastItem span {
+    display: block;
+    font-size: 24px;
+    margin: 7px 0;
+}
+
+.forecastItem b {
+    color: #0085aa;
+    font-size: 14px;
+}
+#cloudMap {
+    width: 100%;
+    height: 420px;
+    margin-top: 20px;
+    border-radius: 18px;
+    overflow: hidden;
+}
+/* ===============================
+   REALISTIC SATELLITE OBSERVATION
+   =============================== */
+
+.satelliteObservation {
+    margin-top: 25px;
+    padding: 22px;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #071b2b, #0b3445);
+    border: 1px solid rgba(0, 220, 255, 0.35);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    color: white;
+}
+
+.satelliteObservation h3 {
+    margin-bottom: 18px;
+    font-size: 20px;
+    letter-spacing: 1px;
+}
+
+.satelliteVisual {
+    position: relative;
+    height: 230px;
+    overflow: hidden;
+    border-radius: 15px;
+    background:
+        linear-gradient(
+            rgba(5, 25, 35, 0.25),
+            rgba(5, 25, 35, 0.25)
+        ),
+        linear-gradient(180deg, #162f40, #17251f);
+    border: 1px solid rgba(255,255,255,0.15);
+}
+
+/* Satellite */
+
+.satelliteIcon {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 38px;
+    z-index: 5;
+    filter: drop-shadow(0 0 10px rgba(0,220,255,0.8));
+}
+
+/* Radar / SAR beam */
+
+.radarBeam {
+    position: absolute;
+    top: 55px;
+    left: 50%;
+    width: 2px;
+    height: 150px;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 220, 255, 0.9),
+        rgba(0, 220, 255, 0)
+    );
+    transform: rotate(18deg);
+    transform-origin: top;
+    box-shadow: 0 0 15px rgba(0,220,255,0.7);
+}
+
+/* Clouds */
+
+.cloudLayer {
+    position: absolute;
+    top: 85px;
+    width: 100%;
+    text-align: center;
+    font-size: 32px;
+    letter-spacing: 12px;
+    opacity: 0.8;
+}
+
+/* Rain */
+
+.rainLayer {
+    position: absolute;
+    top: 125px;
+    left: 45%;
+    font-size: 20px;
+    line-height: 28px;
+    color: #62cfff;
+    opacity: 0.8;
+    animation: rainMove 1.2s linear infinite;
+}
+
+@keyframes rainMove {
+    from {
+        transform: translateY(-8px);
+        opacity: 0.3;
+    }
+
+    to {
+        transform: translateY(15px);
+        opacity: 1;
+    }
+}
+
+/* Ground */
+
+.groundLayer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 14px;
+    text-align: center;
+    background: linear-gradient(
+        transparent,
+        rgba(25, 90, 55, 0.9)
+    );
+    color: #b9f6c5;
+    font-size: 14px;
+}
+
+/* Information cards */
+
+.satelliteInfo {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.satelliteInfo div {
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.satelliteInfo span {
+    display: block;
+    font-size: 11px;
+    opacity: 0.65;
+    margin-bottom: 5px;
+}
+
+.satelliteInfo b {
+    font-size: 14px;
+}
+
+.satelliteNote {
+    margin-top: 18px;
+    padding: 13px;
+    border-left: 3px solid #19c9e8;
+    background: rgba(0, 200, 230, 0.06);
+    font-size: 13px;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+/* ================================
+   REALISTIC SATELLITE OBSERVATION
+   ================================ */
+
+.satelliteObservation {
+    margin-top: 25px;
+    padding: 22px;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #071b2b, #0b3145);
+    color: white;
+    overflow: hidden;
+}
+
+.satelliteObservation h3 {
+    margin-bottom: 18px;
+    letter-spacing: 1px;
+}
+
+.satelliteVisual {
+    position: relative;
+    height: 260px;
+    border-radius: 16px;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 30% 25%, rgba(255,255,255,.12), transparent 20%),
+        linear-gradient(to bottom, #07111c 0%, #123b50 48%, #174b32 49%, #102b20 100%);
+}
+
+/* Satellite */
+.satelliteIcon {
+    position: absolute;
+    top: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 42px;
+    z-index: 5;
+    filter: drop-shadow(0 0 12px rgba(120,220,255,.8));
+    animation: satelliteMove 5s ease-in-out infinite;
+}
+
+/* Radar beam */
+.radarBeam {
+    position: absolute;
+    top: 65px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 170px;
+    background: linear-gradient(
+        to bottom,
+        rgba(0,220,255,.9),
+        rgba(0,220,255,.15),
+        transparent
+    );
+    box-shadow: 0 0 18px rgba(0,220,255,.7);
+    z-index: 3;
+}
+
+/* Clouds */
+.cloudLayer {
+    position: absolute;
+    top: 95px;
+    width: 100%;
+    text-align: center;
+    font-size: 42px;
+    letter-spacing: 15px;
+    opacity: .75;
+    z-index: 4;
+    animation: cloudMove 8s linear infinite;
+}
+
+/* Ground */
+.groundLayer {
+    position: absolute;
+    bottom: -18px;
+    width: 100%;
+    text-align: center;
+    font-size: 115px;
+    opacity: .85;
+    z-index: 2;
+}
+
+@keyframes satelliteMove {
+
+    0% {
+        transform: translateX(-80px);
+    }
+
+    50% {
+        transform: translateX(80px);
+    }
+
+    100% {
+        transform: translateX(-80px);
+    }
+}
+
+@keyframes cloudMove {
+
+    0% {
+        transform: translateX(-25px);
+    }
+
+    50% {
+        transform: translateX(25px);
+    }
+
+    100% {
+        transform: translateX(-25px);
+    }
+}
+/* ===== JALRASTA SATELLITE FIX ===== */
+
+.satelliteObservation .satelliteVisual {
+    position: relative !important;
+    width: 100% !important;
+    height: 280px !important;
+    overflow: hidden !important;
+    border-radius: 18px !important;
+    background: linear-gradient(
+        180deg,
+        #061522 0%,
+        #0b3042 55%,
+        #183c2b 100%
+    ) !important;
+    display: block !important;
+}
+
+.satelliteObservation .satelliteIcon {
+    position: absolute !important;
+    top: 22px !important;
+    left: 50% !important;
+    width: auto !important;
+    height: auto !important;
+    font-size: 42px !important;
+    transform: translateX(-50%) !important;
+    z-index: 10 !important;
+}
+
+.satelliteObservation .radarBeam {
+    position: absolute !important;
+    top: 65px !important;
+    left: 50% !important;
+    width: 3px !important;
+    height: 190px !important;
+    background: linear-gradient(
+        to bottom,
+        #00eaff,
+        rgba(0,234,255,.35),
+        transparent
+    ) !important;
+    z-index: 8 !important;
+}
+
+.satelliteObservation .cloudLayer {
+    position: absolute !important;
+    top: 105px !important;
+    left: 0 !important;
+    width: 100% !important;
+    text-align: center !important;
+    font-size: 38px !important;
+    letter-spacing: 8px !important;
+    z-index: 7 !important;
+    color: white !important;
+}
+
+.satelliteObservation .groundLayer {
+    position: absolute !important;
+    bottom: -25px !important;
+    left: 0 !important;
+    width: 100% !important;
+    text-align: center !important;
+    font-size: 100px !important;
+    z-index: 4 !important;
+}
+
+/* IMPORTANT: prevent other website styles from affecting this section */
+
+.satelliteObservation h1,
+.satelliteObservation h2,
+.satelliteObservation h3,
+.satelliteObservation h4,
+.satelliteObservation p,
+.satelliteObservation div {
+    box-sizing: border-box;
+}
+/* ============================= */
+/* REAL SENTINEL-1 SAR VISUAL */
+/* ============================= */
+
+.realSARScene {
+    position: relative;
+    width: 100%;
+    height: 330px;
+    margin-top: 18px;
+    overflow: hidden;
+    border-radius: 18px;
+    background: #050b12;
+    border: 1px solid rgba(0, 220, 255, 0.35);
+    box-shadow:
+        0 0 25px rgba(0, 180, 255, 0.15),
+        inset 0 0 30px rgba(0, 0, 0, 0.7);
+}
+
+.realSARImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter:
+        contrast(1.15)
+        brightness(0.9)
+        saturate(0.85);
+}
+
+/* dark satellite-analysis overlay */
+
+.sarScanOverlay {
+    position: absolute;
+    inset: 0;
+
+    background:
+        linear-gradient(
+            rgba(0, 255, 255, 0.05) 1px,
+            transparent 1px
+        );
+
+    background-size: 100% 5px;
+
+    pointer-events: none;
+}
+
+/* moving radar scan */
+
+.sarScanLine {
+    position: absolute;
+
+    left: 0;
+    width: 100%;
+    height: 3px;
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0, 255, 255, 0.9),
+        transparent
+    );
+
+    box-shadow:
+        0 0 15px rgba(0, 255, 255, 0.8);
+
+    animation: sarScanning 3s linear infinite;
+
+    pointer-events: none;
+}
+
+@keyframes sarScanning {
+
+    0% {
+        top: 0%;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        top: 100%;
+        opacity: 0;
+    }
+
+}
+
+
+/* Sentinel-1 label */
+
+.sarLabel {
+
+    position: absolute;
+
+    top: 15px;
+    left: 15px;
+
+    padding: 8px 13px;
+
+    background: rgba(2, 12, 20, 0.82);
+
+    border-left: 3px solid #00d9ff;
+
+    color: white;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    backdrop-filter: blur(6px);
+}
+
+.sarLabel span {
+
+    display: block;
+
+    margin-top: 3px;
+
+    color: #00d9ff;
+
+    font-size: 9px;
+
+    letter-spacing: 1.5px;
+}
+
+
+/* analysis target */
+
+.sarTarget {
+
+    position: absolute;
+
+    right: 18%;
+    top: 45%;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    color: white;
+
+    font-size: 10px;
+
+    text-shadow:
+        0 1px 4px black;
+}
+
+.sarTarget span {
+
+    width: 13px;
+    height: 13px;
+
+    border: 2px solid #00e5ff;
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 12px #00e5ff;
+
+    animation: targetPulse 1.5s infinite;
+}
+
+@keyframes targetPulse {
+
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.5);
+        opacity: 0.5;
+    }
+
+}
+
+
+/* information cards */
+
+.sarInfo {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 10px;
+
+    margin-top: 12px;
+}
+
+.sarInfo div {
+
+    padding: 12px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(0, 30, 45, 0.75);
+
+    border:
+        1px solid rgba(0, 210, 255, 0.2);
+
+    text-align: center;
+}
+
+.sarInfo small {
+
+    display: block;
+
+    color: #8ba5b5;
+
+    font-size: 9px;
+
+    letter-spacing: 1px;
+
+    margin-bottom: 5px;
+}
+
+.sarInfo b {
+
+    color: white;
+
+    font-size: 12px;
+}
+/* ===== REALISTIC SATELLITE OBSERVATION ===== */
+
+.satelliteObservation {
+    position: relative;
+    overflow: hidden;
+    margin-top: 25px;
+    padding: 22px;
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at 50% 45%,
+            rgba(30, 120, 80, 0.35),
+            transparent 35%),
+        linear-gradient(145deg, #061218, #020608 70%);
+    border: 1px solid rgba(80, 220, 170, 0.35);
+    box-shadow:
+        0 0 30px rgba(0, 255, 170, 0.12),
+        inset 0 0 40px rgba(0, 255, 170, 0.05);
+    color: white;
+}
+
+/* Satellite observation heading */
+
+.satelliteObservation h3 {
+    position: relative;
+    z-index: 5;
+    margin-bottom: 18px;
+    color: #dffff4;
+    letter-spacing: 1.5px;
+    font-size: 20px;
+}
+
+/* Main satellite visual */
+
+.satelliteVisual {
+    position: relative;
+    height: 300px;
+    overflow: hidden;
+    border-radius: 16px;
+    background:
+        radial-gradient(
+            ellipse at 50% 55%,
+            rgba(35, 130, 95, 0.35),
+            transparent 45%
+        ),
+        linear-gradient(
+            180deg,
+            #02070a 0%,
+            #061318 55%,
+            #020608 100%
+        );
+    border: 1px solid rgba(100, 255, 190, 0.25);
+}
+
+/* Earth-like surface */
+
+.satelliteVisual::before {
+    content: "";
+    position: absolute;
+    width: 520px;
+    height: 220px;
+    left: 50%;
+    bottom: -105px;
+    transform: translateX(-50%);
+    border-radius: 50% 50% 0 0;
+
+    background:
+        radial-gradient(
+            circle at 35% 35%,
+            rgba(100, 190, 120, 0.8) 0 4%,
+            transparent 5%
+        ),
+        radial-gradient(
+            circle at 60% 40%,
+            rgba(80, 170, 110, 0.65) 0 5%,
+            transparent 6%
+        ),
+        linear-gradient(
+            160deg,
+            #174f42,
+            #0b382e 40%,
+            #071d22
+        );
+
+    box-shadow:
+        0 -20px 50px rgba(0, 255, 180, 0.15),
+        0 -5px 25px rgba(60, 180, 130, 0.2);
+}
+
+/* Cloud layers */
+
+.satelliteVisual::after {
+    content: "";
+    position: absolute;
+    width: 420px;
+    height: 120px;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%) rotate(-5deg);
+
+    background:
+        radial-gradient(
+            ellipse,
+            rgba(255,255,255,0.28) 0 18%,
+            transparent 20%
+        ),
+        radial-gradient(
+            ellipse,
+            rgba(255,255,255,0.18) 0 15%,
+            transparent 18%
+        );
+
+    filter: blur(10px);
+    opacity: 0.75;
+}
+
+/* Satellite icon */
+
+.satelliteIcon {
+    position: absolute;
+    top: 35px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+
+    width: 70px;
+    height: 38px;
+
+    background: linear-gradient(
+        145deg,
+        #d7e1e1,
+        #68777a
+    );
+
+    border-radius: 6px;
+
+    box-shadow:
+        0 0 12px rgba(180,255,230,0.5);
+}
+
+/* Satellite solar panels */
+
+.satelliteIcon::before,
+.satelliteIcon::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    width: 42px;
+    height: 30px;
+
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #163f55 0 7px,
+            #6b9fb5 8px 9px
+        );
+
+    border: 1px solid #8ab4c2;
+}
+
+.satelliteIcon::before {
+    right: 73px;
+}
+
+.satelliteIcon::after {
+    left: 73px;
+}
+
+/* Radar scanning beam */
+
+.radarBeam {
+    position: absolute;
+    left: 50%;
+    top: 75px;
+    width: 3px;
+    height: 190px;
+
+    transform-origin: top center;
+    transform: rotate(25deg);
+
+    background: linear-gradient(
+        to bottom,
+        rgba(0,255,170,0.8),
+        rgba(0,255,170,0)
+    );
+
+    box-shadow:
+        0 0 12px rgba(0,255,170,0.8);
+
+    animation: radarScan 3s infinite alternate ease-in-out;
+    z-index: 8;
+}
+
+@keyframes radarScan {
+
+    0% {
+        transform: rotate(-35deg);
+        opacity: 0.35;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: rotate(35deg);
+        opacity: 0.45;
+    }
+}
+
+/* Cloud observation points */
+
+.cloudLayer {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    pointer-events: none;
+}
+
+.cloudLayer::before {
+    content: "•  •     •       •\A     •       •   •\A  •      •        •";
+    white-space: pre;
+    position: absolute;
+    left: 20%;
+    top: 42%;
+
+    color: rgba(210,255,240,0.8);
+    font-size: 25px;
+    line-height: 35px;
+
+    text-shadow:
+        0 0 12px rgba(180,255,230,0.8);
+
+    animation: cloudMove 6s infinite alternate ease-in-out;
+}
+
+@keyframes cloudMove {
+
+    from {
+        transform: translateX(-15px);
+        opacity: 0.45;
+    }
+
+    to {
+        transform: translateX(25px);
+        opacity: 0.9;
+    }
+}
+
+/* Analysis Area */
+
+.analysisArea {
+    position: absolute;
+    left: 20px;
+    bottom: 18px;
+    z-index: 20;
+
+    padding: 8px 14px;
+    border-radius: 8px;
+
+    background: rgba(0, 15, 18, 0.75);
+    border: 1px solid rgba(0,255,170,0.35);
+
+    color: #9fffe2;
+    font-size: 12px;
+    letter-spacing: 1px;
+
+    backdrop-filter: blur(6px);
+}
+/* ========================================
+   PADDY VS FLOOD
+======================================== */
+
+.paddyDashboard {
+    width: 100%;
+}
+
+.paddyDashboard h2 {
+    margin-bottom: 10px;
+}
+
+.locationBox {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.locationBox input {
+    flex: 1;
+    min-width: 220px;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+#paddyLoading {
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 10px;
+    background: rgba(0, 180, 220, 0.1);
+    text-align: center;
+}
+
+.paddyAnalysisResult {
+    margin-top: 20px;
+}
+
+.paddySatelliteCard {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.paddySatelliteImage {
+    width: 100%;
+    max-height: 450px;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+    margin-top: 12px;
+}
+
+.satelliteLabel {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.satelliteLabel span {
+    display: block;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.paddyClassification {
+    margin-top: 20px;
+}
+
+.classificationGrid {
+    display: grid;
+    grid-template-columns:
+        repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.classificationCard {
+    padding: 18px;
+    border-radius: 14px;
+    text-align: center;
+}
+
+.classificationCard span {
+    display: block;
+    font-size: 30px;
+}
+
+.classificationCard small {
+    display: block;
+    margin-top: 8px;
+    font-weight: bold;
+}
+
+.classificationCard strong {
+    display: block;
+    font-size: 25px;
+    margin-top: 6px;
+}
+
+.classificationCard.normal {
+    background: #dff5d8;
+}
+
+.classificationCard.flood {
+    background: #d9efff;
+}
+
+.classificationCard.risk {
+    background: #fff0c9;
+}
+
+.paddyStatus {
+    margin-top: 20px;
+    padding: 18px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+}
+
+.paddyNormal {
+    background: #dff5d8;
+}
+
+.paddyFlood {
+    background: #d9efff;
+}
+
+.paddyRisk {
+    background: #fff0c9;
+}
+
+@media (max-width: 700px) {
+
+    .classificationGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .locationBox {
+        flex-direction: column;
+    }
+
+    .locationBox input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+}
+/* ========================================
+   PADDY VS FLOOD
+======================================== */
+
+.paddyDashboard {
+    width: 100%;
+}
+
+
+.paddyDashboard h2 {
+    margin-bottom: 10px;
+}
+
+
+.paddyDashboard p {
+    line-height: 1.6;
+}
+
+
+#paddyLocationInput {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+    margin: 15px 0 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.08);
+    color: white;
+    font-size: 16px;
+    outline: none;
+}
+
+
+#paddyLoading {
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 10px;
+    background: rgba(0,180,255,0.12);
+    text-align: center;
+}
+
+
+.paddyAnalysisResult {
+    margin-top: 25px;
+}
+
+
+.paddyMeta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 15px 0;
+}
+
+
+.paddyMeta span {
+    padding: 8px 12px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.08);
+}
+
+
+.paddySatelliteBox {
+    margin-top: 20px;
+}
+
+
+.paddyImageContainer {
+    width: 100%;
+    min-height: 250px;
+    margin-top: 15px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #07131d;
+}
+
+
+.paddySatelliteImage {
+    width: 100%;
+    display: block;
+    max-height: 600px;
+    object-fit: contain;
+}
+
+
+.paddyInterpretation {
+    margin-top: 25px;
+}
+
+
+.paddyResultCard {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    margin: 12px 0;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.07);
+    border-left: 4px solid #35c759;
+}
+
+
+.paddyResultCard.floodCard {
+    border-left-color: #2196f3;
+}
+
+
+.paddyResultCard.warningCard {
+    border-left-color: #ffb300;
+}
+
+
+.resultIcon {
+    font-size: 30px;
+}
+
+
+.paddyResultCard strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+
+.paddyResultCard p {
+    margin: 0;
+}
+
+
+.paddyMethod {
+    margin-top: 25px;
+    padding: 18px;
+    border-radius: 12px;
+    background: rgba(0,150,255,0.08);
+}
+
+
+.methodFlow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+
+.methodFlow span {
+    padding: 8px 12px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.08);
+}
+
+
+.paddyDisclaimer {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    opacity: 0.75;
+}
+/* ========================================
+   PADDY ANALYSIS
+======================================== */
+
+#paddyMap {
+    width: 100%;
+    height: 280px;
+    margin-top: 20px;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.paddyScores {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.scoreCard {
+    padding: 20px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.08);
+    text-align: center;
+}
+
+.scoreCard span {
+    display: block;
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.scoreCard small {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+.scoreCard strong {
+    display: block;
+    font-size: 28px;
+    margin-top: 8px;
+}
+
+.paddyClassification {
+    padding: 18px;
+    border-radius: 16px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.paddyClassification span {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.paddyClassification strong {
+    font-size: 22px;
+}
+
+.paddyStatus {
+    background: rgba(40,180,99,0.15);
+}
+
+.floodStatus {
+    background: rgba(231,76,60,0.15);
+}
+
+.mixed {
+    background: rgba(241,196,15,0.15);
+}
+
+.paddySatellite {
+    margin-top: 25px;
+}
+
+.paddyImageBox {
+    width: 100%;
+    border-radius: 18px;
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+.paddySARImage {
+    width: 100%;
+    display: block;
+    min-height: 250px;
+    object-fit: cover;
+}
+
+.satelliteCaption {
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+.paddyExplanation {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.06);
+}
+
+.paddyExplanation small {
+    display: block;
+    margin-top: 15px;
+    opacity: 0.7;
+    line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+
+    .paddyScores {
+        grid-template-columns: 1fr;
+    }
+
+}
+.riskStatus {
+    background: #fff3e0;
+    border-left: 6px solid #fb8c00;
+}
+#paddyLocationInput,
+#locationInput {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box;
+    padding: 14px 18px !important;
+    margin-bottom: 12px;
+    font-size: 16px !important;
+    color: #0b1f33 !important;
+    background: #ffffff !important;
+    border: 2px solid #0891b2 !important;
+    border-radius: 12px !important;
+    outline: none;
+}
+
+#paddyLocationInput::placeholder,
+#locationInput::placeholder {
+    color: #6b7c8c !important;
+}
+
+#paddyLocationInput:focus,
+#locationInput:focus {
+    border-color: #0e7490 !important;
+    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.25);
+}
