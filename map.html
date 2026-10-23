@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JalRasta Flood Map</title>
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #eaf8fc;
+            color: #153b50;
+        }
+
+        header {
+            padding: 18px;
+            background: #087ea4;
+            color: white;
+        }
+
+        header h1 {
+            margin: 0 0 6px;
+        }
+
+        header p {
+            margin: 0;
+        }
+
+        .search-panel {
+            padding: 16px;
+            background: white;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        input {
+            flex: 1;
+            min-width: 180px;
+            padding: 12px;
+            border: 1px solid #b7dce8;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            background: #087ea4;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #05617f;
+        }
+
+        #message {
+            padding: 0 16px;
+            background: white;
+            font-size: 14px;
+        }
+
+        #results {
+            padding: 0 16px 12px;
+            background: white;
+        }
+
+        .place-option {
+            display: block;
+            width: 100%;
+            margin: 6px 0;
+            text-align: left;
+            background: #e4f6fc;
+            color: #153b50;
+        }
+
+        #map {
+            height: 65vh;
+            min-height: 380px;
+            width: 100%;
+        }
+
+        .notice {
+            padding: 12px 16px;
+            font-size: 13px;
+            background: #fff4d6;
+            color: #604b12;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>🌊 JALRASTA</h1>
+        <p>Worldwide Flood Monitoring Map</p>
+    </header>
+
+    <section class="search-panel">
+        <input
+            id="locationInput"
+            type="text"
+            placeholder="Search city, village or country..."
+        />
+        <button onclick="searchLocation()">Search Location</button>
+    </section>
+
+    <div id="message">Search for any supported location to begin.</div>
+    <div id="results"></div>
+    <div id="map"></div>
+    <div id="flood-legend" style="
+    background: white;
+    padding: 12px 16px;
+    border-top: 1px solid #c6e1e9;
+    font-family: Arial, sans-serif;
+    color: #153b50;
+">
+    <strong>🌊 Satellite Flood Monitoring</strong>
+    <p style="margin: 8px 0;">
+        Layer: Observed Flood Extent
+    </p>
+    <p style="margin: 8px 0;">
+        Data source: Copernicus Global Flood Monitoring (GFM)
+    </p>
+    <small>
+        Shows the selected GFM map layer. Data availability and
+        observation time depend on the source service.
+        This layer is not a future flood forecast.
+    </small>
+</div>
+<div id="forecast-panel" style="
+    background: white;
+    padding: 16px;
+    border-top: 1px solid #c6e1e9;
+    color: #153b50;
+">
+    <h3>🌧️ River Flood Forecast</h3>
+    <p style="font-size:13px; color:#526b78; margin-top:0;">
+    Data source:
+    <a href="https://open-meteo.com/en/docs/flood-api"
+       target="_blank"
+       rel="noopener noreferrer">
+        Open-Meteo Flood API
+    </a>
+</p>
+    <p id="forecast-message">
+        Search and select a location to load its river forecast.
+    </p>
+    <div id="forecast-results"></div>
+    <small>
+        River discharge is not confirmed flooding. Interpret it using
+        local river thresholds and other available evidence.
+    </small>
+</div>
+    <div class="notice">
+        Map markers show selected locations, not confirmed flood zones.
+       GFM observed flood and water layers are available. River-discharge forecasts are shown separately and do not confirm flooding. Check official local alerts for safety decisions.
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        const map = L.map("map").setView([20, 0], 2);
+
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                attribution: "&copy; OpenStreetMap contributors",
+                maxZoom: 19
+            }
+        ).addTo(map);
+        const observedFloodLayer = L.tileLayer.wms(
+    "https://geoserver.gfm.eodc.eu/geoserver/gfm/wms",
+    {
+        layers: "observed_flood_extent",
+        version: "1.1.1",
+        format: "image/png",
+        transparent: true,
+        tiled: true
+    }
+);
+
+const observedWaterLayer = L.tileLayer.wms(
+    "https://geoserver.gfm.eodc.eu/geoserver/gfm/wms",
+    {
+        layers: "observed_water_extent",
+        version: "1.1.1",
+        format: "image/png",
+        transparent: true,
+        tiled: true
+    }
+);
+
+const overlayLayers = {
+    "Observed Flood Extent (GFM)": observedFloodLayer,
+    "Observed Water Extent (GFM)": observedWaterLayer
+};
+
+L.control.layers(
+    null,
+    overlayLayers,
+    { collapsed: false }
+).addTo(map);
+
+        let locationMarker = null;
+
+        async function searchLocation() {
+            const name = document
+                .getElementById("locationInput")
+                .value.trim();
+
+            const message = document.getElementById("message");
+            const resultsBox = document.getElementById("results");
+
+            resultsBox.replaceChildren();
+
+            if (name.length < 2) {
+                message.textContent =
+                    "Please enter at least 2 characters.";
+                return;
+            }
+
+            message.textContent = "Searching locations...";
+
+            try {
+                const url =
+                    "http://127.0.0.1:5000/api/location-search?name=" +
+                    encodeURIComponent(name);
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!response.ok || data.status !== "success") {
+                    throw new Error(
+                        data.message || "Location search failed."
+                    );
+                }
+
+                if (!data.results || data.results.length === 0) {
+                    message.textContent = "No matching locations found.";
+                    return;
+                }
+
+                message.textContent =
+                    "Select the correct location from the results:";
+
+                data.results.forEach((place) => {
+                    const button = document.createElement("button");
+                    button.className = "place-option";
+
+                    const details = [
+                        place.name,
+                        place.admin1,
+                        place.country
+                    ].filter(Boolean);
+
+                    button.textContent = details.join(", ");
+
+                    button.addEventListener("click", () => {
+                        const lat = Number(place.latitude);
+                        const lon = Number(place.longitude);
+
+                        if (
+                            !Number.isFinite(lat) ||
+                            !Number.isFinite(lon)
+                        ) {
+                            message.textContent =
+                                "Coordinates are unavailable.";
+                            return;
+                        }
+
+                        map.setView([lat, lon], 10);
+
+                        if (locationMarker) {
+                            map.removeLayer(locationMarker);
+                        }
+
+                        locationMarker = L.marker([lat, lon])
+                            .addTo(map)
+                            .bindPopup(
+                                details.join(", ") +
+                                "<br>Latitude: " + lat +
+                                "<br>Longitude: " + lon
+                            )
+                            .openPopup();
+
+                        message.textContent =
+    "Location selected. Loading river forecast...";
+    document.getElementById("forecast-message").textContent =
+    "Loading river forecast for " + details.join(", ") + "...";
+
+loadFloodForecast(lat, lon);
+                    });
+
+                    resultsBox.appendChild(button);
+                });
+            } catch (error) {
+                message.textContent =
+                    "Could not search. Check that Flask is running " +
+                    "and your internet connection is working.";
+            }
+        }
+        async function loadFloodForecast(latitude, longitude) {
+    const message = document.getElementById("forecast-message");
+    const results = document.getElementById("forecast-results");
+
+    message.textContent = "Loading 7-day river forecast...";
+    results.replaceChildren();
+
+    try {
+        const url =
+            `http://127.0.0.1:5000/api/flood-forecast?latitude=${latitude}&longitude=${longitude}`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (!response.ok || data.status !== "success") {
+            throw new Error(data.message || "Forecast unavailable.");
+        }
+
+        if (!data.forecast || data.forecast.length === 0) {
+            message.textContent =
+                "No forecast values available for this location.";
+            return;
+        }
+
+        message.textContent =
+            "7-day river forecast | Units: " + (data.unit || "m³/s");
+
+        const table = document.createElement("table");
+        table.style.width = "100%";
+        table.style.borderCollapse = "collapse";
+
+        const header = document.createElement("tr");
+
+        ["Date", "River discharge (m³/s)","Trend"].forEach(label => {
+            const th = document.createElement("th");
+            th.textContent = label;
+            th.style.textAlign = "left";
+            th.style.padding = "10px";
+            th.style.borderBottom = "1px solid #c6e1e9";
+            header.appendChild(th);
+        });
+
+        table.appendChild(header);
+
+        data.forecast.forEach((item, index) => {
+    const row = document.createElement("tr");
+
+    const current = item.river_discharge_m3_per_second;
+
+const previous = index > 0
+    ? data.forecast[index - 1].river_discharge_m3_per_second
+    : null;
+
+const currentValid =
+    typeof current === "number" && Number.isFinite(current);
+
+const previousValid =
+    typeof previous === "number" && Number.isFinite(previous);
+
+    let trend = "Unavailable";
+
+    if (currentValid && previousValid) { 
+        if (current > previous) {
+            trend = "Rising";
+        } else if (current < previous) {
+            trend = "Falling";
+        } else {
+            trend = "Stable";
+        }
+    }
+
+    [
+        item.date,
+        current ?? "Unavailable",
+        index === 0 ? "No previous day" : trend
+    ].forEach(value => {
+        const cell = document.createElement("td");
+        cell.textContent = value;
+        if (value === "Rising") {
+    cell.style.color = "#c2410c";
+    cell.style.fontWeight = "bold";
+} else if (value === "Falling") {
+    cell.style.color = "#15803d";
+    cell.style.fontWeight = "bold";
+} else if (value === "Stable") {
+    cell.style.color = "#0369a1";
+    cell.style.fontWeight = "bold";
+}
+        cell.style.padding = "10px";
+        cell.style.borderBottom = "1px solid #e2eef2";
+        row.appendChild(cell);
+    });
+
+    table.appendChild(row);
+});
+
+        results.appendChild(table);
+
+    } catch (error) {
+        message.textContent =
+            "Forecast could not load. Check Flask and try again.";
+    }
+}
+
+        document
+            .getElementById("locationInput")
+            .addEventListener("keydown", (event) => {
+                if (event.key === "Enter") {
+                    searchLocation();
+                }
+            });
+    </script>
+</body>
+</html>
