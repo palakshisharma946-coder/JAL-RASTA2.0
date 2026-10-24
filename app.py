@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request 
+from flask import Flask, jsonify, request, send_from_directory 
 from flask_cors import CORS
 from chatbot.chatbot_service import get_chatbot_response
 from flood_map.flood_map_service import get_flood_map_data
@@ -7,17 +7,33 @@ from flood_map.flood_forecast_service import get_flood_forecast
 from rescue_priority.rescue_priority_service import rank_rescue_reports
 from routing.routing_service import get_route
 from alert_system.alert_service import generate_flood_alert
+from cloud_flood.cloud_analysis import cloud_bp
 
 app = Flask(__name__)
 CORS(app)
-
+app.register_blueprint(cloud_bp)
 
 @app.route("/")
 def home():
-    return jsonify({
-        "status": "success",
-        "message": "JalRasta backend is running"
-    })
+    return send_from_directory(".", "index.html")
+@app.route("/assets/<path:filename>")
+def frontend_assets(filename):
+    return send_from_directory("assets", filename)
+
+
+@app.route("/script.js")
+def frontend_js():
+    return send_from_directory(".", "script.js")
+
+
+@app.route("/style.css")
+def frontend_css():
+    return send_from_directory(".", "style.css")
+
+
+@app.route("/map.html")
+def map_page():
+    return send_from_directory(".", "map.html")
 
     
 @app.route("/api/chatbot", methods=["POST"])
