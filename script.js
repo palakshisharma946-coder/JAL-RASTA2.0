@@ -102,185 +102,376 @@ modal.addEventListener(
 // ========================================
 // LIVE FLOOD MAP
 // ========================================
+// ===== JALRASTA LIVE FLOOD MAP =====
 
-function openMap() {
-
+function openLiveFloodMap() {
     openModal(`
+        <div class="liveFloodModule">
+            <h2>🌊 Live Flood Map</h2>
+            <p>Search a location to explore available satellite flood layers and river forecasts.</p>
 
-        <h2>
-            🗺️ Live Flood Intelligence Map
-        </h2>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input id="lfmLocationInput"
+                       type="text"
+                       placeholder="Search city, village or country..."
+                       style="flex:1;min-width:180px;padding:12px;border:1px solid #b7dce8;border-radius:10px;">
 
-        <p>
-            JalRasta continuously monitors
-            water levels, flood zones,
-            safe zones and rescue locations.
-        </p>
-
-
-        <div class="demoMap">
-
-            <div class="mapWater"></div>
-
-
-            <div class="mapLocation flood">
-                📍 Flood Zone
+                <button class="modalButton"
+                        type="button"
+                        onclick="lfmSearchLocation()">
+                    Search
+                </button>
             </div>
 
+            <p id="lfmMessage">Search for a location to begin.</p>
+            <div id="lfmResults"></div>
 
-            <div class="mapLocation safe">
-                📍 Safe Zone
+            <div id="lfmMap"
+                 style="height:360px;width:100%;border-radius:14px;margin:14px 0;z-index:1;">
             </div>
 
-
-            <div class="mapLocation rescuePoint">
-                🚑 Rescue Team
+            <div style="padding:14px;background:#f0fafb;border-radius:12px;">
+                <b>🛰️ Satellite flood layers</b>
+                <p style="font-size:13px;">
+                    Use the layer control on the map to explore available observed flood and water layers.
+                </p>
+                <small>Source: Copernicus Global Flood Monitoring (GFM). Availability depends on the source service.</small>
             </div>
 
+            <div style="padding:14px;margin-top:14px;background:#fff8e8;border-radius:12px;">
+                <h3>🌧️ River Flood Forecast</h3>
+                <p id="lfmForecastMessage">Select a location to load the forecast.</p>
+                <div id="lfmForecastResults"></div>
+                <small>River discharge forecasts do not confirm flooding. Follow official local alerts.</small>
+            </div>
         </div>
-
-
-        <div class="dataBox">
-
-            <h3>
-                Current Area Analysis
-            </h3>
-
-
-            <p>
-                🌊 Water Level:
-                <b>4.8 metres</b>
-            </p>
-
-
-            <p>
-                ⚠️ Flood Risk:
-                <b>HIGH</b>
-            </p>
-
-
-            <p>
-                👥 Estimated Population:
-                <b>2,340</b>
-            </p>
-
-        </div>
-
-
-        <button
-            type="button"
-            class="modalButton"
-            onclick="analyseArea()">
-
-            ANALYSE THIS AREA
-
-        </button>
-
     `);
 
+    setTimeout(() => lfmInitializeMap(), 150);
 }
 
+// Aliases in case the existing button uses either function name.
+function openFloodMap() {
+    openLiveFloodMap();
+}
 
-function analyseArea() {
+function lfmInitializeMap() {
+    const mapElement = document.getElementById("lfmMap");
+    if (!mapElement || mapElement.dataset.initialized === "yes") return;
 
-    alert(
+    if (typeof L === "undefined") {
+        document.getElementById("lfmMessage").textContent =
+            "Map library missing. Add Leaflet to index.html first.";
+        return;
+    }
 
-        "AREA ANALYSIS COMPLETE\n\n" +
+    const map = L.map(mapElement).setView([20, 0], 2);
+    mapElement.dataset.initialized = "yes";
+    window.jalrastaLiveFloodMap = map;
 
-        "Flood Risk: HIGH\n" +
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+        maxZoom: 19
+    }).addTo(map);
 
-        "Water Level: 4.8m\n" +
-
-        "Population at Risk: 2,340\n" +
-
-        "Rescue Priority: HIGH"
-
+    const floodLayer = L.tileLayer.wms(
+        "https://geoserver.gfm.eodc.eu/geoserver/gfm/wms",
+        {
+            layers: "observed_flood_extent",
+            version: "1.1.1",
+            format: "image/png",
+            transparent: true
+        }
     );
 
+    const waterLayer = L.tileLayer.wms(
+        "https://geoserver.gfm.eodc.eu/geoserver/gfm/wms",
+        {
+            layers: "observed_water_extent",
+            version: "1.1.1",
+            format: "image/png",
+            transparent: true
+        }
+    );
+
+    L.control.layers(null, {
+        "Observed Flood Extent (GFM)": floodLayer,
+        "Observed Water Extent (GFM)": waterLayer
+    }, { collapsed: false }).addTo(map);
+
+    setTimeout(() => map.invalidateSize(), 250);
 }
+
+async function lfmSearchLocation() {
+    const input = document.getElementById("lfmLocationInput");
+    const message = document.getElementById("lfmMessage");
+    const results = document.getElementById("lfmResults");
+    if (!input || !message || !results) return;
+
+    const name = input.value.trim();
+    results.replaceChildren();
+
+    if (name.length < 2) {
+        message.textContent = "Please enter at least 2 characters.";
+        return;
+    }
+
+    message.textContent = "Searching locations...";
+
+    try {
+        const response = await fetch(
+            `${BACKEND_URL}/api/location-search?name=${encodeURIComponent(name)}`
+        );
+        const data = await response.json();
+
+        if (!response.ok || data.status !== "success") {
+            throw new Error(data.message || "Location search failed.");
+        }
+
+        if (!data.results?.length) {
+            message.textContent = "No matching locations found.";
+            return;
+        }
+
+        message.textContent = "Choose the correct location:";
+
+        data.results.forEach(place => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "modalButton";
+            button.style.cssText =
+                "display:block;width:100%;margin:6px 0;text-align:left;";
+
+            button.textContent = [
+                place.name, place.admin1, place.country
+            ].filter(Boolean).join(", ");
+
+            button.addEventListener("click", () => {
+                const lat = Number(place.latitude);
+                const lon = Number(place.longitude);
+
+                if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+                    message.textContent = "Coordinates unavailable.";
+                    return;
+                }
+
+                const map = window.jalrastaLiveFloodMap;
+                if (!map) return;
+
+                map.setView([lat, lon], 9);
+
+                if (window.lfmLocationMarker) {
+                    map.removeLayer(window.lfmLocationMarker);
+                }
+
+                window.lfmLocationMarker = L.marker([lat, lon])
+                    .addTo(map)
+                    .bindPopup(button.textContent)
+                    .openPopup();
+
+                message.textContent = "Location selected.";
+                lfmLoadForecast(lat, lon);
+            });
+
+            results.appendChild(button);
+        });
+    } catch (error) {
+        console.error("Live Flood Map search:", error);
+        message.textContent =
+            "Location search failed. Check that the Flask backend is running.";
+    }
+}
+async function lfmLoadForecast(latitude, longitude) {
+    const message = document.getElementById("lfmForecastMessage");
+    const results = document.getElementById("lfmForecastResults");
+
+    if (!message || !results) return;
+
+    message.textContent = "Loading river forecast...";
+    results.replaceChildren();
+
+    try {
+        const response = await fetch(
+            `${BACKEND_URL}/api/flood-forecast?latitude=${latitude}&longitude=${longitude}`
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || data.status !== "success") {
+            throw new Error(data.message || "Forecast unavailable.");
+        }
+
+        if (!data.forecast?.length) {
+            message.textContent = "No forecast values available.";
+            return;
+        }
+
+        message.textContent =
+            `River discharge forecast · ${data.unit || "m³/s"}`;
+
+        const table = document.createElement("table");
+        table.style.cssText =
+            "width:100%;border-collapse:collapse;font-size:13px;";
+
+        const header = document.createElement("tr");
+
+        ["Date", "Discharge", "Trend"].forEach(label => {
+            const th = document.createElement("th");
+            th.textContent = label;
+            th.style.cssText =
+                "padding:10px 5px;text-align:left;border-bottom:1px solid #c6e1e9;";
+            header.appendChild(th);
+        });
+
+        table.appendChild(header);
+
+        data.forecast.forEach((item, index) => {
+            const row = document.createElement("tr");
+
+            const current = item.river_discharge_m3_per_second;
+            const previous = index > 0
+                ? data.forecast[index - 1].river_discharge_m3_per_second
+                : null;
+
+            const currentValid =
+                typeof current === "number" && Number.isFinite(current);
+
+            const previousValid =
+                typeof previous === "number" && Number.isFinite(previous);
+
+            let trend = "Unavailable";
+
+            if (index === 0) {
+                trend = "First day";
+            } else if (currentValid && previousValid) {
+                if (current > previous) trend = "Rising";
+                else if (current < previous) trend = "Falling";
+                else trend = "Stable";
+            }
+
+            const values = [
+                item.date ?? "—",
+                currentValid ? current : "Unavailable",
+                trend
+            ];
+
+            values.forEach(value => {
+                const cell = document.createElement("td");
+                cell.textContent = String(value);
+                cell.style.cssText =
+                    "padding:10px 5px;border-bottom:1px solid #e2eef2;";
+
+                if (value === "Rising") {
+                    cell.style.color = "#c2410c";
+                    cell.style.fontWeight = "bold";
+                } else if (value === "Falling") {
+                    cell.style.color = "#15803d";
+                    cell.style.fontWeight = "bold";
+                } else if (value === "Stable") {
+                    cell.style.color = "#0369a1";
+                    cell.style.fontWeight = "bold";
+                }
+
+                row.appendChild(cell);
+            });
+
+            table.appendChild(row);
+        });
+
+        results.appendChild(table);
+
+    } catch (error) {
+        console.error("Live Flood Map forecast:", error);
+        message.textContent =
+            "Forecast could not load. Check the backend and try again.";
+    }
+}
+
+// ===== END LIVE FLOOD MAP =====
 
 
 // ========================================
 // AI CHATBOT
 // ========================================
 
+
+
 function openChat() {
-
     openModal(`
+        <h2>🤖 JalRasta AI Assistant</h2>
+        <p>Ask about floods, rainfall, rescue information and routes.</p>
 
-        <h2>
-            🤖 JalRasta AI Assistant
-        </h2>
-
-
-        <p>
-            Ask JalRasta about floods,
-            rainfall, safe routes and
-            affected regions.
-        </p>
-
-
-        <div class="chatWindow">
-
+        <div id="chatWindow" class="chatWindow">
             <div class="botMessage">
-
-                Hello! 👋<br>
-                I am JalRasta AI.<br>
-                How can I help you?
-
+                Hello! I am JalRasta AI. How can I help you?
             </div>
-
-
-            <div class="userMessage">
-
-                Which area should be
-                evacuated first?
-
-            </div>
-
-
-            <div class="botMessage">
-
-                Based on current flood risk,
-                Zone 01 should be prioritised.
-
-            </div>
-
         </div>
 
+        <form id="chatForm" onsubmit="askAI(event)">
+            <input
+                id="chatInput"
+                type="text"
+                placeholder="Type your question..."
+                required
+                style="width:100%; padding:12px; margin:10px 0;"
+            >
+            <button class="modalButton" type="submit">
+                SEND MESSAGE
+            </button>
+        </form>
 
-        <button
-            type="button"
-            class="modalButton"
-            onclick="askAI()">
-
-            ASK JALRASTA AI
-
-        </button>
-
+        <p id="chatStatus" role="status"></p>
     `);
-
 }
 
+async function askAI(event) {
+    if (event) event.preventDefault();
 
-function askAI() {
+    const input = document.getElementById("chatInput");
+    const chatWindow = document.getElementById("chatWindow");
+    const status = document.getElementById("chatStatus");
 
-    alert(
+    if (!input || !chatWindow || !status) return;
 
-        "JALRASTA AI\n\n" +
+    const message = input.value.trim();
+    if (!message) return;
 
-        "Priority Zone: Zone 01\n" +
-
-        "Risk Level: HIGH\n" +
-
-        "Recommended Action: " +
-        "Immediate evacuation"
-
+    chatWindow.insertAdjacentHTML(
+        "beforeend",
+        `<div class="userMessage"></div>`
     );
+    chatWindow.lastElementChild.textContent = message;
 
+    input.value = "";
+    status.textContent = "JalRasta is responding...";
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/chatbot`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.status !== "success") {
+            throw new Error(data.message || "Chatbot request failed.");
+        }
+
+        chatWindow.insertAdjacentHTML(
+            "beforeend",
+            `<div class="botMessage"></div>`
+        );
+        chatWindow.lastElementChild.textContent = data.response;
+        status.textContent = "";
+    } catch (error) {
+        status.textContent =
+            "Could not connect to the chatbot. Check that app.py is running.";
+        console.error("Chatbot error:", error);
+    }
+
+    chatWindow.scrollTop = chatWindow.scrollHeight;
 }
-
-
 // ========================================
 // CLOUD INTELLIGENCE
 // ========================================
@@ -1199,7 +1390,7 @@ catch (error) {
 // PADDY VS FLOOD
 // ========================================
 
-const BACKEND_URL = "http://127.0.0.1:5000";
+const BACKEND_URL = "";
 let paddyMapInstance = null;
 
 
@@ -1563,171 +1754,769 @@ async function analysePaddyLocation() {
 // ========================================
 
 function openAlert() {
-
     openModal(`
+        <div class="alertDashboard">
+            <div class="alertHero">
+                <div class="alertHeroIcon">🚨</div>
+                <div>
+                    <div class="alertEyebrow">JALRASTA • SAFETY CENTER</div>
+                    <h2>Flood Risk Assessment</h2>
+                    <p>Enter a location to analyse available conditions.</p>
+                </div>
+            </div>
 
-        <h2>🚨 Flood Alert Center</h2>
+            <div class="alertFormCard">
+                <label for="alertLocation">📍 Location</label>
+                <input
+                    id="alertLocation"
+                    type="text"
+                    placeholder="Enter city, district or village"
+                    style="width:100%;box-sizing:border-box;padding:14px;border:1px solid #d7e7eb;border-radius:12px;margin-bottom:14px;"
+                    onkeydown="if(event.key==='Enter'){event.preventDefault(); analyseLocationRisk();}"
+                >
 
-        <p>
-            JalRasta has detected a high-risk
-            flood zone.
-        </p>
+                <button class="alertAnalyseBtn" type="button"
+        onclick="analyseLocationRisk()">
+    <span>Analyse Location</span>
+    <span>→</span>
+</button>
 
+<div id="alertResult" class="alertResultPanel"
+     aria-live="polite"></div>
 
-        <div class="alertBox">
+<button class="alertAnalyseBtn" type="button"
+        onclick="generateLocationEmergencyAlert()"
+        style="margin-top:12px;background:#b91c1c;">
+    <span>🚨 Generate Emergency Alert</span>
+    <span>→</span>
+</button>
+            </div>
 
-            <strong>
-                ⚠️ HIGH FLOOD RISK
-            </strong>
-
-            <span>
-                Water level is rising rapidly.
-            </span>
-
-            <span>
-                Evacuation is recommended.
-            </span>
-
+            <div class="alertSafetyNote">
+                <span>ℹ️</span>
+                <p>Assessment depends on available forecast data. Follow official local warnings and emergency instructions.</p>
+            </div>
         </div>
-
-
-        <div class="dataBox">
-
-            <p>
-                📍 Zone:
-                <b>Zone 01</b>
-            </p>
-
-            <p>
-                🌊 Water Level:
-                <b>4.8m</b>
-            </p>
-
-            <p>
-                🚨 Risk:
-                <b>HIGH</b>
-            </p>
-
-        </div>
-
-
-        <button
-            type="button"
-            class="modalButton"
-            onclick="sendEmergencyAlert()">
-
-            SEND EMERGENCY ALERT
-
-        </button>
-
     `);
-
 }
 
+async function analyseLocationRisk() {
+    const input = document.getElementById("alertLocation");
+    const result = document.getElementById("alertResult");
 
-function sendEmergencyAlert() {
+    if (!input || !result) return;
 
-    alert(
-        "🚨 EMERGENCY ALERT SENT\n\n" +
-        "Affected Zone: Zone 01\n" +
-        "Priority: HIGH\n" +
-        "Status: Authorities Notified"
-    );
+    const location = input.value.trim();
 
+    if (!location) {
+        result.textContent = "Please enter a location.";
+        return;
+    }
+
+    result.replaceChildren();
+    result.textContent = "Analysing rainfall and river forecast...";
+
+    try {
+        const geoResponse = await fetch(
+            `${BACKEND_URL}/api/location-search?name=${encodeURIComponent(location)}`
+        );
+        const geoData = await geoResponse.json();
+
+        if (!geoResponse.ok || geoData.status !== "success" ||
+            !geoData.results?.length) {
+            throw new Error(geoData.message || "Location not found.");
+        }
+
+        const place = geoData.results[0];
+        const params = new URLSearchParams({
+            latitude: place.latitude,
+            longitude: place.longitude
+        });
+
+        const [weatherResponse, riverResponse] = await Promise.all([
+            fetch(`${BACKEND_URL}/api/flood-map?${params}`),
+            fetch(`${BACKEND_URL}/api/flood-forecast?${params}`)
+        ]);
+
+        const weather = await weatherResponse.json();
+        const river = await riverResponse.json();
+
+        if (!weatherResponse.ok || weather.status !== "success") {
+            throw new Error(weather.message || "Rainfall data unavailable.");
+        }
+
+        if (!riverResponse.ok || river.status !== "success") {
+            throw new Error(river.message || "River forecast unavailable.");
+        }
+
+        const current = weather.current_weather || {};
+        const rainfall = Number(current.precipitation_mm);
+        const probability = Number(weather.rain_probability_percent);
+        const days = Array.isArray(river.forecast) ? river.forecast : [];
+
+        const validDischarge = days
+            .map(day => day.river_discharge_m3_per_second)
+            .filter(value => value !== null && value !== undefined)
+            .map(Number)
+            .filter(Number.isFinite);
+
+        const firstDischarge = validDischarge[0];
+        const lastDischarge = validDischarge[validDischarge.length - 1];
+
+        // Demo screening rules only; not an official flood prediction.
+        let risk = "INSUFFICIENT DATA";
+        let explanation =
+            "Available data is not enough to assign a reliable risk level.";
+
+        if (Number.isFinite(rainfall) && Number.isFinite(probability)) {
+            if (rainfall >= 20 || probability >= 80) {
+                risk = "HIGH WEATHER CONCERN";
+                explanation =
+                    "Heavy current precipitation or a high rain probability needs attention. This does not confirm flooding.";
+            } else if (rainfall >= 5 || probability >= 50) {
+                risk = "MODERATE WEATHER CONCERN";
+                explanation =
+                    "Rainfall conditions may need monitoring. Check official local flood warnings.";
+            } else {
+                risk = "LOW WEATHER CONCERN";
+                explanation =
+                    "The available rainfall indicators are relatively low. Local flooding can still occur.";
+            }
+        }
+
+        result.replaceChildren();
+
+        function addText(tag, text, className) {
+            const element = document.createElement(tag);
+            element.textContent = text;
+            if (className) element.className = className;
+            result.appendChild(element);
+        }
+
+        addText(
+            "h3",
+            `📍 ${place.name || location}${place.admin1 ? ", " + place.admin1 : ""}`
+        );
+
+        addText("p", `Preliminary status: ${risk}`, "alertRiskLevel");
+        addText("p", explanation);
+
+        addText("h4", "🌧️ Current Weather");
+        addText(
+            "p",
+            `Precipitation: ${
+                Number.isFinite(rainfall) ? rainfall + " mm" : "Unavailable"
+            }`
+        );
+        addText(
+            "p",
+            `Rain probability: ${
+                Number.isFinite(probability) ? probability + "%" : "Unavailable"
+            }`
+        );
+
+        addText("h4", "🌊 River Discharge Forecast");
+
+        if (days.length) {
+            days.forEach(day => {
+                const value = day.river_discharge_m3_per_second;
+                addText(
+                    "p",
+                    `${day.date}: ${
+                        value == null ? "Unavailable" : value + " m³/s"
+                    }`
+                );
+            });
+        } else {
+            addText("p", "No river discharge values available.");
+        }
+
+        if (Number.isFinite(firstDischarge) &&
+            Number.isFinite(lastDischarge)) {
+            addText(
+                "p",
+                `Forecast change: ${firstDischarge} to ${lastDischarge} m³/s`
+            );
+        }
+
+        addText(
+            "p",
+            "Safety: This is a simple weather screening, not a validated flood-risk model. River discharge needs local thresholds; follow official warnings."
+        );
+
+    } catch (error) {
+        result.replaceChildren();
+        const message = document.createElement("p");
+        message.textContent = `Analysis failed: ${error.message}`;
+        result.appendChild(message);
+        console.error("Location risk error:", error);
+    }
+}
+async function generateLocationEmergencyAlert() {
+    const input = document.getElementById("alertLocation");
+    const result = document.getElementById("alertResult");
+
+    if (!input || !result) return;
+
+    const location = input.value.trim();
+
+    if (!location) {
+        result.textContent = "Please enter and analyse a location first.";
+        return;
+    }
+
+    result.textContent = "Checking conditions before generating alert...";
+
+    try {
+        const geoResponse = await fetch(
+            `${BACKEND_URL}/api/location-search?name=${encodeURIComponent(location)}`
+        );
+        const geo = await geoResponse.json();
+
+        if (!geoResponse.ok || geo.status !== "success" ||
+            !geo.results?.length) {
+            throw new Error("Location could not be verified.");
+        }
+
+        const place = geo.results[0];
+        const params = new URLSearchParams({
+            latitude: place.latitude,
+            longitude: place.longitude
+        });
+
+        const response = await fetch(
+            `${BACKEND_URL}/api/flood-map?${params}`
+        );
+        const weather = await response.json();
+
+        if (!response.ok || weather.status !== "success") {
+            throw new Error("Weather conditions are unavailable.");
+        }
+
+        const current = weather.current_weather || {};
+        const rainfall = Number(current.precipitation_mm);
+        const probability = Number(weather.rain_probability_percent);
+
+        if (!Number.isFinite(rainfall) || !Number.isFinite(probability)) {
+            throw new Error("Not enough weather data to assess an alert.");
+        }
+
+        // These are screening inputs, not proof of an actual flood.
+        const payload = {
+            rainfall_mm: rainfall,
+            water_rising: false,
+            people_at_risk: false
+        };
+
+        const alertResponse = await fetch(`${BACKEND_URL}/api/alerts`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await alertResponse.json();
+
+        if (!alertResponse.ok || data.status !== "success") {
+            throw new Error(data.message || "Alert assessment failed.");
+        }
+
+        result.replaceChildren();
+
+        const heading = document.createElement("h3");
+        heading.textContent = `🚨 ${place.name || location}: ${data.alert_level}`;
+        result.appendChild(heading);
+
+        const message = document.createElement("p");
+        message.textContent = data.alert_message || "Preliminary alert assessment completed.";
+        result.appendChild(message);
+
+        const weatherInfo = document.createElement("p");
+        weatherInfo.textContent =
+            `Rainfall: ${rainfall} mm | Rain probability: ${probability}%`;
+        result.appendChild(weatherInfo);
+
+        if (Array.isArray(data.reasons) && data.reasons.length) {
+            const list = document.createElement("ul");
+            data.reasons.forEach(reason => {
+                const item = document.createElement("li");
+                item.textContent = reason;
+                list.appendChild(item);
+            });
+            result.appendChild(list);
+        }
+
+        const note = document.createElement("p");
+        note.textContent =
+            "Preliminary weather-based assessment only. Rising water and people in danger have not been verified. This does not contact emergency services. Follow official local warnings.";
+        result.appendChild(note);
+
+    } catch (error) {
+        result.textContent = `Alert assessment failed: ${error.message}`;
+        console.error("Location emergency alert error:", error);
+    }
 }
 
+async function sendEmergencyAlert() {
+    const result = document.getElementById("alertResult");
+    const rainfallInput = document.getElementById("alertRainfall");
+    const waterInput = document.getElementById("alertWaterRising");
+    const peopleInput = document.getElementById("alertPeopleRisk");
 
+    if (!result || !rainfallInput || !waterInput || !peopleInput) return;
+
+    const rainfallText = rainfallInput.value.trim();
+
+    if (rainfallText !== "" &&
+        (!Number.isFinite(Number(rainfallText)) || Number(rainfallText) < 0)) {
+        result.textContent = "Please enter valid non-negative rainfall.";
+        return;
+    }
+
+    const payload = {
+        water_rising: waterInput.value === "true",
+        people_at_risk: peopleInput.value === "true"
+    };
+
+    if (rainfallText !== "") {
+        payload.rainfall_mm = Number(rainfallText);
+    }
+
+    result.textContent = "Analysing reported conditions...";
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/alerts`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.status !== "success") {
+            throw new Error(data.message || "Alert analysis failed.");
+        }
+
+        result.replaceChildren();
+
+        const heading = document.createElement("h3");
+        heading.textContent = `Preliminary risk: ${data.alert_level}`;
+        result.appendChild(heading);
+
+        const message = document.createElement("p");
+        message.textContent = data.alert_message;
+        result.appendChild(message);
+
+        if (Array.isArray(data.reasons) && data.reasons.length) {
+            const list = document.createElement("ul");
+            data.reasons.forEach(reason => {
+                const item = document.createElement("li");
+                item.textContent = reason;
+                list.appendChild(item);
+            });
+            result.appendChild(list);
+        }
+
+        const notice = document.createElement("p");
+        notice.textContent = data.notice ||
+            "Preliminary analysis only. Follow official emergency guidance.";
+        result.appendChild(notice);
+
+    } catch (error) {
+        result.textContent =
+            `Could not connect to the alert backend: ${error.message}`;
+        console.error("Alert API error:", error);
+    }
+}
 // ========================================
 // RESCUE PRIORITY
 // ========================================
+// ========================================
+// RESCUE PRIORITY + ROUTE SYSTEM
+// PART 1/2
+// ========================================
+
+// ===== RESCUE PRIORITY: PART 1 =====
+
+let rescueZoneCount = 1;
 
 function openRescue() {
+    rescueZoneCount = 1;
 
     openModal(`
+        <div class="rescueModule">
+            <h2>🚑 Rescue Priority System</h2>
+            <p>Enter the rescue team's starting location and the affected zones. JalRasta will rank the reports by urgency.</p>
 
-        <h2>🚑 Rescue Priority System</h2>
+            <label for="rescueStartLocation"><b>📍 Rescue team starting location</b></label>
+            <input
+                id="rescueStartLocation"
+                type="text"
+                placeholder="e.g. Bhopal Railway Station"
+            />
 
-        <p>
-            JalRasta ranks affected people
-            according to vulnerability and
-            flood severity.
-        </p>
-
-
-        <div class="priorityList">
-
-            <div class="priorityItem first">
-
-                <b>01</b>
-
-                <span>
-                    Elderly / Critical
-                </span>
-
-                <strong>
-                    FIRST
-                </strong>
-
+            <div id="rescueZones">
+                ${createRescueZoneHTML(1)}
             </div>
 
+            <button
+                type="button"
+                class="modalButton"
+                onclick="addRescueZone()">
+                + ADD ANOTHER ZONE
+            </button>
 
-            <div class="priorityItem">
+            <button
+                type="button"
+                class="modalButton"
+                onclick="findRescueRoute()">
+                🚨 ANALYSE & FIND RESCUE ROUTES
+            </button>
 
-                <b>02</b>
-
-                <span>
-                    Children / Families
-                </span>
-
-                <strong>
-                    SECOND
-                </strong>
-
-            </div>
-
-
-            <div class="priorityItem">
-
-                <b>03</b>
-
-                <span>
-                    General Population
-                </span>
-
-                <strong>
-                    THIRD
-                </strong>
-
-            </div>
-
+            <div id="rescueResult" style="margin-top:18px;"></div>
         </div>
-
-
-        <button
-            type="button"
-            class="modalButton"
-            onclick="findRescueRoute()">
-
-            FIND FASTEST RESCUE ROUTE
-
-        </button>
-
     `);
-
 }
 
+function createRescueZoneHTML(number) {
+    return `
+        <div class="rescueZone"
+             id="rescueZone${number}"
+             style="border:1px solid #b9dfe8;border-radius:12px;padding:14px;margin:14px 0;">
 
-function findRescueRoute() {
+            <h3>📍 Affected Zone ${number}</h3>
 
-    alert(
-        "🚑 FASTEST ROUTE FOUND\n\n" +
-        "Rescue Team → Zone 01\n" +
-        "Priority: HIGH\n" +
-        "Recommended Action: Dispatch immediately"
+            <label for="rescueLocation${number}">Zone location</label>
+            <input
+                id="rescueLocation${number}"
+                type="text"
+                placeholder="Enter village, area or city"
+            />
+
+            <div style="margin-top:10px;display:grid;gap:8px;">
+                <label>
+                    <input type="checkbox" id="rescueDanger${number}">
+                    Immediate danger reported
+                </label>
+
+                <label>
+                    <input type="checkbox" id="rescueTrapped${number}">
+                    People trapped
+                </label>
+
+                <label>
+                    <input type="checkbox" id="rescueMedical${number}">
+                    Medical emergency
+                </label>
+
+                <label>
+                    <input type="checkbox" id="rescueVulnerable${number}">
+                    Children, elderly or people needing extra assistance
+                </label>
+
+                <label>
+                    <input type="checkbox" id="rescueWater${number}">
+                    Water level is rising
+                </label>
+
+                <label>
+                    <input type="checkbox" id="rescueNoRoute${number}">
+                    Safe route is NOT confirmed
+                </label>
+            </div>
+
+            ${
+                number > 1
+                    ? `<button type="button"
+                               class="modalButton"
+                               onclick="removeRescueZone(${number})">
+                           Remove this zone
+                       </button>`
+                    : ""
+            }
+        </div>
+    `;
+}
+
+function addRescueZone() {
+    rescueZoneCount++;
+
+    document.getElementById("rescueZones").insertAdjacentHTML(
+        "beforeend",
+        createRescueZoneHTML(rescueZoneCount)
     );
-
 }
 
+function removeRescueZone(number) {
+    const zone = document.getElementById(`rescueZone${number}`);
+    if (zone) zone.remove();
+}
+
+// ===== PART 1 ENDS HERE =====
+// Paste PART 2 immediately below this code.
+// ===== RESCUE PRIORITY: PART 2 =====
+
+async function findRescueRoute() {
+    const resultBox = document.getElementById("rescueResult");
+    const startLocation = document.getElementById("rescueStartLocation")?.value.trim();
+
+    if (!startLocation) {
+        resultBox.innerHTML = "⚠️ Please enter the rescue team's starting location.";
+        return;
+    }
+
+    const zoneElements = document.querySelectorAll(".rescueZone");
+    const reports = [];
+
+    zoneElements.forEach((zone) => {
+        const id = zone.id.replace("rescueZone", "");
+        const location = document.getElementById(`rescueLocation${id}`)?.value.trim();
+
+        if (!location) return;
+
+        reports.push({
+            location,
+            immediate_danger: document.getElementById(`rescueDanger${id}`).checked,
+            people_trapped: document.getElementById(`rescueTrapped${id}`).checked,
+            medical_emergency: document.getElementById(`rescueMedical${id}`).checked,
+            vulnerable_people: document.getElementById(`rescueVulnerable${id}`).checked,
+            water_rising: document.getElementById(`rescueWater${id}`).checked,
+            safe_route_available: !document.getElementById(`rescueNoRoute${id}`).checked
+        });
+    });
+
+    if (reports.length === 0) {
+        resultBox.innerHTML = "⚠️ Enter a location for at least one affected zone.";
+        return;
+    }
+
+    resultBox.innerHTML = "⏳ Analysing reports, locations and available routes...";
+
+    try {
+        // 1. Find rescue team's starting coordinates
+        const startResponse = await fetch(
+            `${BACKEND_URL}/api/location-search?name=${encodeURIComponent(startLocation)}`
+        );
+        const startData = await startResponse.json();
+
+        if (!startResponse.ok || !startData.results?.length) {
+            throw new Error("Rescue starting location not found. Try a more specific location.");
+        }
+
+        const start = startData.results[0];
+
+        // 2. Ask backend to rank affected zones
+        const priorityResponse = await fetch(
+            `${BACKEND_URL}/api/rescue-priority`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ reports })
+            }
+        );
+
+        const priorityData = await priorityResponse.json();
+
+        if (!priorityResponse.ok || !priorityData.ranked_reports) {
+            throw new Error(priorityData.message || "Could not calculate rescue priorities.");
+        }
+
+        // 3. Find coordinates and driving routes for each ranked report
+        const rankedZones = await Promise.all(
+            priorityData.ranked_reports.map(async (report) => {
+                try {
+                    const locationResponse = await fetch(
+                        `${BACKEND_URL}/api/location-search?name=${encodeURIComponent(report.location)}`
+                    );
+                    const locationData = await locationResponse.json();
+
+                    if (!locationResponse.ok || !locationData.results?.length) {
+                        return { ...report, routeError: "Location not found." };
+                    }
+
+                    const place = locationData.results[0];
+
+                    const routeResponse = await fetch(
+                        `${BACKEND_URL}/api/route?start_lat=${start.latitude}` +
+                        `&start_lon=${start.longitude}` +
+                        `&end_lat=${place.latitude}` +
+                        `&end_lon=${place.longitude}`
+                    );
+
+                    const routeData = await routeResponse.json();
+
+                    const routes = routeData.status === "success"
+                        ? [...(routeData.routes || [])].sort(
+                            (a, b) => a.estimated_time_minutes - b.estimated_time_minutes
+                        )
+                        : [];
+
+                    return {
+                        ...report,
+                        latitude: place.latitude,
+                        longitude: place.longitude,
+                        routes,
+                        routeError: routes.length ? "" : "No driving route returned."
+                    };
+                } catch (error) {
+                    return { ...report, routeError: "Could not retrieve route." };
+                }
+            })
+        );
+
+        // 4. Prepare result area and map
+        resultBox.innerHTML = `
+            <h3>🚨 Rescue Priority Results</h3>
+            <p>Reports are ranked by the backend's priority score.</p>
+            <div id="rescueMap"
+                 style="height:360px;width:100%;border-radius:12px;margin:14px 0;">
+            </div>
+            <div class="rescueLegend">
+    <span><i class="dot critical"></i> Critical</span>
+    <span><i class="dot high"></i> High</span>
+    <span><i class="dot moderate"></i> Moderate</span>
+    <span><i class="dot review"></i> Review</span>
+</div>
+            <div id="rescueRankedCards"></div>
+            <p style="font-size:12px;">
+                ⚠️ Route suggestions may not reflect flooded or closed roads.
+                Confirm conditions with emergency services before dispatch.
+            </p>
+        `;
+
+        let rescueMap = null;
+        let mapPoints = [];
+
+        if (typeof L !== "undefined") {
+            rescueMap = L.map("rescueMap").setView(
+                [start.latitude, start.longitude],
+                10
+            );
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "&copy; OpenStreetMap contributors",
+                maxZoom: 19
+            }).addTo(rescueMap);
+
+            L.marker([start.latitude, start.longitude])
+                .addTo(rescueMap)
+                .bindPopup("🚑 Rescue team starting point");
+
+            mapPoints.push([start.latitude, start.longitude]);
+        } else {
+            document.getElementById("rescueMap").innerHTML =
+                "Map library is missing. Please check Leaflet in index.html.";
+        }
+
+        // 5. Draw zone markers and fastest available routes
+        rankedZones.forEach((zone, index) => {
+            if (zone.latitude == null || zone.longitude == null) return;
+
+            const color = zone.priority === "CRITICAL"
+                ? "#dc2626"
+                : zone.priority === "HIGH"
+                    ? "#f97316"
+                    : zone.priority === "MODERATE"
+                        ? "#eab308"
+                        : "#16a34a";
+
+            if (rescueMap) {
+                L.circleMarker([zone.latitude, zone.longitude], {
+                    radius: 9,
+                    color,
+                    fillColor: color,
+                    fillOpacity: 0.8
+                })
+                    .addTo(rescueMap)
+                    .bindPopup(
+                        `<b>${zone.location}</b><br>` +
+                        `Priority: ${zone.priority}<br>` +
+                        `Score: ${zone.priority_score}`
+                    );
+
+                mapPoints.push([zone.latitude, zone.longitude]);
+
+                const fastest = zone.routes?.[0];
+                const coordinates = fastest?.geometry?.coordinates;
+
+                if (coordinates?.length) {
+                    const latLngs = coordinates.map(
+                        ([longitude, latitude]) => [latitude, longitude]
+                    );
+
+                    L.polyline(latLngs, {
+                        color,
+                        weight: 4,
+                        opacity: 0.75
+                    }).addTo(rescueMap);
+                }
+            }
+        });
+
+        if (rescueMap && mapPoints.length) {
+            rescueMap.fitBounds(mapPoints, { padding: [25, 25] });
+            setTimeout(() => rescueMap.invalidateSize(), 150);
+        }
+
+        // 6. Display ranked reports and route information
+        const cards = document.getElementById("rescueRankedCards");
+
+        cards.innerHTML = rankedZones.map((zone, index) => {
+            const fastest = zone.routes?.[0];
+
+            const reasons = Array.isArray(zone.reasons) && zone.reasons.length
+                ? zone.reasons.map(reason => `<li>${reason}</li>`).join("")
+                : "<li>No urgent conditions were selected in this report.</li>";
+
+            const alternativeRoutes = zone.routes?.length > 1
+                ? zone.routes.slice(1).map(route => `
+                    <li>
+                        Alternative route ${route.route_number}:
+                        ${route.distance_km} km,
+                        ${route.estimated_time_minutes} min
+                    </li>
+                `).join("")
+                : "";
+
+            return `
+                <div style="border:1px solid #cbd5e1;border-radius:12px;
+                            padding:14px;margin:12px 0;">
+                    <h3>${index + 1}. ${zone.location}</h3>
+                    <p><b>Priority:</b> ${zone.priority || "REVIEW"}</p>
+                    <p><b>Priority score:</b> ${zone.priority_score ?? "N/A"}</p>
+                    <p><b>Reasons:</b></p>
+                    <ul>${reasons}</ul>
+
+                    ${
+                        fastest
+                            ? `<p><b>Fastest returned driving route:</b>
+                                 Route ${fastest.route_number},
+                                 ${fastest.distance_km} km,
+                                 ${fastest.estimated_time_minutes} minutes.</p>
+                               <ul>${alternativeRoutes}</ul>`
+                            : `<p>⚠️ ${zone.routeError || "No route available."}</p>`
+                    }
+                </div>
+            `;
+        }).join("");
+
+    } catch (error) {
+        resultBox.innerHTML = `
+            <p>❌ ${error.message}</p>
+            <p>Check that the backend is running and try again.</p>
+        `;
+        console.error("Rescue Priority error:", error);
+    }
+}
+
+// ===== RESCUE PRIORITY CODE ENDS =====
+// Make the Live Flood Map available to the HTML button
+window.openMap = function () {
+    if (typeof window.openLiveFloodMap === "function") {
+        window.openLiveFloodMap();
+    } else {
+        console.error("openLiveFloodMap function is missing!");
+    }
+};
 
 // ========================================
 // END OF JALRASTA SCRIPT
